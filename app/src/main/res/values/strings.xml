@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Mqq</string>
+    <string name="login_button_text">登录</string>
+    <string name="chat_send">发送</string>
+</resources>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/login_bg_shape">
+
+    <com.colorful.mqq.ui.TopTitle
+        android:id="@+id/ttb_friendlist_title"
+        android:layout_width="match_parent"
+        android:layout_height="40dp">
+
+    </com.colorful.mqq.ui.TopTitle>
+   <!-- <TextView
+        android:id="@+id/ttb_friendlist_title"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:text="好友列表"
+        android:textSize="20sp"
+        android:gravity="center"
+        android:textColor="@color/white"
+        android:background="@color/topTitleBar_default_background"/>-->
+
+    <ListView
+        android:id="@+id/lv_friend_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:cacheColorHint="@color/transparency"
+        android:layout_margin="10dp"
+        android:layout_above="@+id/btn_add_friend"
+        android:layout_below="@+id/ttb_friendlist_title">
+    </ListView>
+
+    <ImageView
+        android:id="@+id/iv_show_Pop"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/list_list_nt"
+        android:onClick="showPop"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+
+
+</RelativeLayout>

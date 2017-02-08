@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/login_bg_shape"
+    android:orientation="vertical" >
+
+    <com.colorful.mqq.ui.TopTitle
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:id="@+id/ttb_addfriend_title"/>
+    <!--<TextView
+        android:id="@+id/ttb_addfriend_title"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:text="添加好友"
+        android:textSize="20sp"
+        android:gravity="center"
+        android:textColor="@color/white"
+        android:background="@color/topTitleBar_default_background"/>-->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/dimen_10"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="用户名：" />
+
+        <EditText
+            android:id="@+id/cet_friend_username"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:textSize="25sp"
+            android:hint="输入好友用户名"
+            android:textColorHint="#DDDDDD">
+        </EditText>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/dimen_10"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="昵    称：" />
+
+        <EditText
+            android:id="@+id/cet_friend_nickname"
+            android:layout_width="match_parent"
+            android:textSize="25sp"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:hint="输入好友昵称"
+            android:textColorHint="#DDDDDD">
+        </EditText>
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/btn_add_friend"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dimen_20"
+        android:paddingRight="5dp"
+        android:paddingLeft="5dp"
+        android:background="@drawable/login_button_selector"
+        android:text="添加好友"
+        android:textColor="@color/white" />
+
+</LinearLayout>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/login_bg_shape">
+
+    <com.colorful.mqq.ui.TopTitle
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:id="@+id/chat_title"/>
+
+    <!--<TextView
+        android:id="@+id/chat_title"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:text="聊天窗口"
+        android:textSize="20sp"
+        android:gravity="center"
+        android:textColor="@color/white"
+        android:background="@color/topTitleBar_default_background"
+        android:layout_alignParentTop="true"/>-->
+    <LinearLayout
+
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/chat_title"
+        android:orientation="vertical">
+
+        <ListView
+            android:id="@+id/lv_chat_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:cacheColorHint="@color/transparency"
+            android:listSelector="@color/transparency"
+            android:dividerHeight="@dimen/dimen_20"
+            android:padding="@dimen/dimen_10"
+            android:divider="@null"
+            android:transcriptMode="normal">
+        </ListView>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#7fd8d8d8"/>
+        <LinearLayout
+            android:layout_alignParentBottom="true"
+            android:id="@+id/linaer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <EditText
+                android:hint="请输入发送内容"
+                android:id="@+id/et_send_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"/>
+
+            <Button
+                android:id="@+id/bt_send"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="send"/>
+        </LinearLayout>
+    </LinearLayout>
+</RelativeLayout>
