@@ -5,18 +5,20 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
+import android.support.annotation.RequiresApi;
 
 import java.io.File;
 
 /**
  * SDCard帮助类
- * @author: huylee
- * @time:	2015-8-13下午10:13:31
+ * @author: colorful
+ * @time:	2017年2月16日 17:11:46
  */
 public class SdCardUtil {
 
     /**
 	 * 是否存在SD卡
+	 * @ReturnType: boolean
 	 * @return
 	 */
 	public static boolean isHasSDCard() {
@@ -79,4 +81,22 @@ public class SdCardUtil {
         }
         return 0;
     }
+
+	/**
+	 * 获取SDCard剩余可用容量  单位byte
+	 * @return
+     */
+	@RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
+	@SuppressWarnings("deprecation")
+	public static long getSDCardAllSize(){
+		if(isHasSDCard()){
+			StatFs statFs = new StatFs(getSDCardDir());
+			//获取空闲的数据块数量
+			long availableBlocks = statFs.getAvailableBlocks()-4;
+			//获取单个数据块的大小(byte)
+			long freeBlocks = statFs.getAvailableBytes();
+			return availableBlocks * freeBlocks;
+		}
+		return 0;
+	}
 }

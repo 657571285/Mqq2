@@ -2,6 +2,7 @@ package com.colorful.mqq.activity;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,6 +18,7 @@ import com.colorful.mqq.smack.SmackManager;
 import com.colorful.mqq.ui.Chatkeyboard;
 import com.colorful.mqq.ui.TopTitle;
 import com.colorful.mqq.util.DateUtil;
+import com.colorful.mqq.util.SdCardUtil;
 import com.colorful.mqq.util.ValueUtil;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 
@@ -26,9 +28,13 @@ import org.jivesoftware.smack.chat.ChatManagerListener;
 import org.jivesoftware.smack.chat.ChatMessageListener;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smackx.filetransfer.FileTransfer;
+import org.jivesoftware.smackx.filetransfer.FileTransferListener;
+import org.jivesoftware.smackx.filetransfer.FileTransferRequest;
+import org.jivesoftware.smackx.filetransfer.IncomingFileTransfer;
 import org.jivesoftware.smackx.filetransfer.OutgoingFileTransfer;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -91,6 +97,10 @@ public class ChatActivity extends Activity implements Chatkeyboard.ChatKeyboardO
      * imageloader加载参数配置
      */
     private DisplayImageOptions options;
+    /**
+     * 文件存储目录
+     */
+    private String fileDir;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,6 +139,9 @@ public class ChatActivity extends Activity implements Chatkeyboard.ChatKeyboardO
                 .showImageOnFail(R.drawable.pic_default)
                 .showImageOnLoading(R.drawable.pic_default)
         .build();
+
+        fileDir = SdCardUtil.getCacheDir(ChatActivity.this);
+        receiveFile();
 
         List<com.colorful.mqq.bean.Message> list = new ArrayList<>();
         mAdapter = new ChatAdapter(ChatActivity.this, options, list);
@@ -221,6 +234,25 @@ public class ChatActivity extends Activity implements Chatkeyboard.ChatKeyboardO
         }
     }
 
+    public void receiveFile(){
+        SmackManager.getInstance().addFileTransferListener(new FileTransferListener() {
+            @Override
+            public void fileTransferRequest(FileTransferRequest request) {
+                IncomingFileTransfer transfer = request.accept();
+                try {
+                    String type = request.getDescription();
+                    File file = new File(fileDir,request.getFileName());
+                    transfer.recieveFile(file);
+                    checkTransferStatus(transfer,file,Integer.parseInt(type),false);
+                } catch (SmackException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
     /**\
      * 检查发送文件，接受文件的状态
      * @param transfer
@@ -228,15 +260,54 @@ public class ChatActivity extends Activity implements Chatkeyboard.ChatKeyboardO
      * @param type  文件类型： 图片，文本，语音
      * @param isSend  是否为发送
      */
-    private void checkTransferStatus(FileTransfer transfer,File file, int type, boolean isSend) {
+    private void checkTransferStatus(final FileTransfer transfer, File file, int type, boolean isSend) {
         String username = friendNickname;
         if(isSend){
             username = currNickname;
         }
         String name = username;
-        com.colorful.mqq.bean.Message msg = new com.colorful.mqq.bean.Message(type,name,DateUtil.formatDatetime(new Date()),isSend);
+        final com.colorful.mqq.bean.Message msg = new com.colorful.mqq.bean.Message(type,name,DateUtil.formatDatetime(new Date()),isSend);
+        msg.setFilePath(file.getAbsolutePath());
+        msg.setLoadState(0);
+        new Thread(){
+            @Override
+            public void run() {
+                if(transfer.getProgress() < 1){
+                    //传输开始
+                    handler.obtainMessage(1,msg).sendToTarget();
+                }
+                while (!transfer.isDone()){
+                    try {
+                        Thread.sleep(200);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (FileTransfer.Status.complete.equals(transfer.getStatus())){
+                    //传输完成
+                    msg.setLoadState(1);
+                    handler.obtainMessage(2,msg).sendToTarget();
+                }else if (FileTransfer.Status.cancelled.equals(transfer.getStatus())){
+                    //传输取消
+                    msg.setLoadState(-1);
+                    handler.obtainMessage(2,msg).sendToTarget();
+                }else if (FileTransfer.Status.error.equals(transfer.getStatus())){
+                    //传输错误
+                    msg.setLoadState(-1);
+                    handler.obtainMessage(2,msg).sendToTarget();
+                }else if (FileTransfer.Status.refused.equals(transfer.getStatus())){
+                    //传输拒绝
+                    msg.setLoadState(-1);
+                    handler.obtainMessage(2,msg).sendToTarget();
+                }
 
+            };
+        }.start();
 
+    }
+    protected void onDestroy(){
+        super.onDestroy();
+        SmackManager.getInstance().getChatManager().removeChatListener(chatManagerListener);
     }
 
     @Override
