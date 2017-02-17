@@ -43,6 +43,7 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="#7fd8d8d8"/>
+
         <LinearLayout
             android:layout_alignParentBottom="true"
             android:id="@+id/linaer"
@@ -50,7 +51,11 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <EditText
+            <com.colorful.mqq.ui.Chatkeyboard
+                android:id="@+id/ckb_chat_board"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+            <!--<EditText
                 android:hint="请输入发送内容"
                 android:id="@+id/et_send_content"
                 android:layout_width="match_parent"
@@ -61,7 +66,7 @@
                 android:id="@+id/bt_send"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="send"/>
+                android:text="send"/>-->
         </LinearLayout>
     </LinearLayout>
 </RelativeLayout>

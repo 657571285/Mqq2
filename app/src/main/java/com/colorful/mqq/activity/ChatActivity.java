@@ -2,22 +2,23 @@ package com.colorful.mqq.activity;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.text.TextUtils;
-import android.widget.Button;
-import android.widget.EditText;
+import android.provider.MediaStore;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.colorful.mqq.R;
 import com.colorful.mqq.adapter.ChatAdapter;
 import com.colorful.mqq.smack.SmackManager;
 import com.colorful.mqq.ui.Chatkeyboard;
 import com.colorful.mqq.ui.TopTitle;
+import com.colorful.mqq.util.BitmapUtil;
 import com.colorful.mqq.util.DateUtil;
+import com.colorful.mqq.util.FileUtil;
 import com.colorful.mqq.util.SdCardUtil;
 import com.colorful.mqq.util.ValueUtil;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
@@ -41,12 +42,11 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 
 /**
  * Created by colorful on 2016/12/20.
  */
-public class ChatActivity extends Activity implements Chatkeyboard.ChatKeyboardOperateListener{
+public class ChatActivity extends Activity implements Chatkeyboard.ChatKeyboardOperateListener {
 
     /**
      * 聊天框头部
@@ -59,15 +59,20 @@ public class ChatActivity extends Activity implements Chatkeyboard.ChatKeyboardO
     @BindView(R.id.lv_chat_content)
     ListView lvChatContent;
     /**
-     * 发送聊天信息内容
+     * 聊天输入控件
      */
+    @BindView(R.id.ckb_chat_board)
+    Chatkeyboard ckbChatBoard;
+   /* *//**
+     * 发送聊天信息内容
+     *//*
     @BindView(R.id.et_send_content)
     EditText etSendContent;
-    /**
+    *//**
      * 发送按钮
-     */
+     *//*
     @BindView(R.id.bt_send)
-    Button btSend;
+    Button btSend;*/
 
     /**
      * 聊天对象用户Jid
@@ -107,7 +112,7 @@ public class ChatActivity extends Activity implements Chatkeyboard.ChatKeyboardO
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_layout);
         ButterKnife.bind(this);
-
+        ckbChatBoard.setChatKeyboardOperateListener(this);
         friendRosterUser = getIntent().getStringExtra("user");
         friendNickname = getIntent().getStringExtra("nickname");
         currNickname = SmackManager.getInstance().getAccountName();
@@ -116,7 +121,7 @@ public class ChatActivity extends Activity implements Chatkeyboard.ChatKeyboardO
             @Override
             public void onLeftClick() {
                 finish();
-                overridePendingTransition(android.R.anim.fade_in,android.R.anim.fade_out);
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             }
         });
         //System.out.println(currNickname);
@@ -138,7 +143,7 @@ public class ChatActivity extends Activity implements Chatkeyboard.ChatKeyboardO
                 .resetViewBeforeLoading(true)
                 .showImageOnFail(R.drawable.pic_default)
                 .showImageOnLoading(R.drawable.pic_default)
-        .build();
+                .build();
 
         fileDir = SdCardUtil.getCacheDir(ChatActivity.this);
         receiveFile();
@@ -175,7 +180,6 @@ public class ChatActivity extends Activity implements Chatkeyboard.ChatKeyboardO
     };
 
 
-
     @SuppressLint("HandlerLeak")
     private Handler handler = new Handler() {
         @Override
@@ -197,21 +201,22 @@ public class ChatActivity extends Activity implements Chatkeyboard.ChatKeyboardO
 
     /**
      * 发送消息
+     *
      * @param message
      */
     @Override
     public void send(final String message) {
-        if (ValueUtil.isEmpty(message)){
+        if (ValueUtil.isEmpty(message)) {
             return;
         }
-        new Thread(){
+        new Thread() {
             @Override
             public void run() {
                 try {
                     chat.sendMessage(message);
-                    com.colorful.mqq.bean.Message msg = new com.colorful.mqq.bean.Message(com.colorful.mqq.bean.Message.MESSAGE_TYPE_TEXT,currNickname,DateUtil.formatDatetime(new Date()),true);
+                    com.colorful.mqq.bean.Message msg = new com.colorful.mqq.bean.Message(com.colorful.mqq.bean.Message.MESSAGE_TYPE_TEXT, currNickname, DateUtil.formatDatetime(new Date()), true);
                     msg.setContent(message);
-                    handler.obtainMessage(1,msg).sendToTarget();
+                    handler.obtainMessage(1, msg).sendToTarget();
                 } catch (SmackException.NotConnectedException e) {
                     e.printStackTrace();
                 }
@@ -221,29 +226,30 @@ public class ChatActivity extends Activity implements Chatkeyboard.ChatKeyboardO
 
     /**
      * 发送文件
+     *
      * @param file
      * @param type
      */
-    public void sendFile(File file,int type){
-        OutgoingFileTransfer transfer  = SmackManager.getInstance().getSendFileTransfer(sendUser);
+    public void sendFile(File file, int type) {
+        OutgoingFileTransfer transfer = SmackManager.getInstance().getSendFileTransfer(sendUser);
         try {
-            transfer.sendFile(file,String.valueOf(type));
+            transfer.sendFile(file, String.valueOf(type));
             checkTransferStatus(transfer, file, type, true);//检查发送文件的状态
         } catch (SmackException e) {
             e.printStackTrace();
         }
     }
 
-    public void receiveFile(){
+    public void receiveFile() {
         SmackManager.getInstance().addFileTransferListener(new FileTransferListener() {
             @Override
             public void fileTransferRequest(FileTransferRequest request) {
                 IncomingFileTransfer transfer = request.accept();
                 try {
                     String type = request.getDescription();
-                    File file = new File(fileDir,request.getFileName());
+                    File file = new File(fileDir, request.getFileName());
                     transfer.recieveFile(file);
-                    checkTransferStatus(transfer,file,Integer.parseInt(type),false);
+                    checkTransferStatus(transfer, file, Integer.parseInt(type), false);
                 } catch (SmackException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
@@ -253,66 +259,76 @@ public class ChatActivity extends Activity implements Chatkeyboard.ChatKeyboardO
         });
     }
 
-    /**\
+    /**
+     * \
      * 检查发送文件，接受文件的状态
+     *
      * @param transfer
-     * @param file  发送或接收的文件
-     * @param type  文件类型： 图片，文本，语音
-     * @param isSend  是否为发送
+     * @param file     发送或接收的文件
+     * @param type     文件类型： 图片，文本，语音
+     * @param isSend   是否为发送
      */
     private void checkTransferStatus(final FileTransfer transfer, File file, int type, boolean isSend) {
         String username = friendNickname;
-        if(isSend){
+        if (isSend) {
             username = currNickname;
         }
         String name = username;
-        final com.colorful.mqq.bean.Message msg = new com.colorful.mqq.bean.Message(type,name,DateUtil.formatDatetime(new Date()),isSend);
+        final com.colorful.mqq.bean.Message msg = new com.colorful.mqq.bean.Message(type, name, DateUtil.formatDatetime(new Date()), isSend);
         msg.setFilePath(file.getAbsolutePath());
         msg.setLoadState(0);
-        new Thread(){
+        new Thread() {
             @Override
             public void run() {
-                if(transfer.getProgress() < 1){
+                if (transfer.getProgress() < 1) {
                     //传输开始
-                    handler.obtainMessage(1,msg).sendToTarget();
+                    handler.obtainMessage(1, msg).sendToTarget();
                 }
-                while (!transfer.isDone()){
+                while (!transfer.isDone()) {
                     try {
                         Thread.sleep(200);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
-                if (FileTransfer.Status.complete.equals(transfer.getStatus())){
+                if (FileTransfer.Status.complete.equals(transfer.getStatus())) {
                     //传输完成
                     msg.setLoadState(1);
-                    handler.obtainMessage(2,msg).sendToTarget();
-                }else if (FileTransfer.Status.cancelled.equals(transfer.getStatus())){
+                    handler.obtainMessage(2, msg).sendToTarget();
+                } else if (FileTransfer.Status.cancelled.equals(transfer.getStatus())) {
                     //传输取消
                     msg.setLoadState(-1);
-                    handler.obtainMessage(2,msg).sendToTarget();
-                }else if (FileTransfer.Status.error.equals(transfer.getStatus())){
+                    handler.obtainMessage(2, msg).sendToTarget();
+                } else if (FileTransfer.Status.error.equals(transfer.getStatus())) {
                     //传输错误
                     msg.setLoadState(-1);
-                    handler.obtainMessage(2,msg).sendToTarget();
-                }else if (FileTransfer.Status.refused.equals(transfer.getStatus())){
+                    handler.obtainMessage(2, msg).sendToTarget();
+                } else if (FileTransfer.Status.refused.equals(transfer.getStatus())) {
                     //传输拒绝
                     msg.setLoadState(-1);
-                    handler.obtainMessage(2,msg).sendToTarget();
+                    handler.obtainMessage(2, msg).sendToTarget();
                 }
 
-            };
+            }
+
+            ;
         }.start();
 
     }
-    protected void onDestroy(){
+
+    protected void onDestroy() {
         super.onDestroy();
         SmackManager.getInstance().getChatManager().removeChatListener(chatManagerListener);
     }
 
+    /**
+     * 发送语音
+     *
+     * @param audioFile
+     */
     @Override
     public void sendVoice(File audioFile) {
-
+        sendFile(audioFile, com.colorful.mqq.bean.Message.MESSAGE_TYPE_VOICE);
     }
 
     @Override
@@ -320,12 +336,86 @@ public class ChatActivity extends Activity implements Chatkeyboard.ChatKeyboardO
 
     }
 
+    /**
+     * 图片
+     */
+    private static final int REQUEST_CODE_GET_IMAGE = 1;
+    /**
+     * 拍照
+     */
+    private static final int REQUEST_CODE_TAKE_PHOTO = 2;
+
     @Override
     public void functionClick(int index) {
-
+        switch (index) {
+            case 1://选择图片
+                selectImage();
+                break;
+            case 2://拍照
+                takePhoto();
+                break;
+        }
     }
 
 
+    /**
+     * 从图库里选择照片
+     */
+    private void selectImage() {
+        Intent intent;
+        if (Build.VERSION.SDK_INT < 19) {
+            intent = new Intent();
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            intent.setType("image/*");
+            startActivityForResult(Intent.createChooser(intent, "选择图片"), REQUEST_CODE_GET_IMAGE);
+        } else {
+            intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            intent.setType("image/*");
+            startActivityForResult(Intent.createChooser(intent, "选择图片"), REQUEST_CODE_GET_IMAGE);
+        }
+    }
+
+    private String picPath = "";
+
+    /**
+     * 拍照
+     */
+    private void takePhoto() {
+        picPath = fileDir + "/" + DateUtil.formatDatetime(new Date(), "yyyyMMddHHmmss") + ".png";
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(new File(picPath)));
+        startActivityForResult(intent, REQUEST_CODE_TAKE_PHOTO);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            if (requestCode == REQUEST_CODE_TAKE_PHOTO) {//拍照成功
+                takePhotoSuccess();
+            } else if (requestCode == REQUEST_CODE_GET_IMAGE) {//图片选择成功
+                Uri dataUri = data.getData();
+                if (dataUri != null) {
+                    File file = FileUtil.uri2File(ChatActivity.this, dataUri);
+                    sendFile(file, com.colorful.mqq.bean.Message.MESSAGE_TYPE_IMAGE);
+                }
+            }
+        }
+    }
+
+    /**
+     * 拍摄照片成功
+     */
+    private void takePhotoSuccess() {
+        Bitmap bitmap = BitmapUtil.createBitmapWithFile(picPath, 640);
+        BitmapUtil.createPictureWithBitmap(picPath, bitmap, 80);
+        if (!bitmap.isRecycled()) {
+            bitmap.recycle();
+            bitmap = null;
+
+        }
+        sendFile(new File(picPath), com.colorful.mqq.bean.Message.MESSAGE_TYPE_IMAGE);
+    }
     /**
      * 发送按钮点击事件
      *//*
@@ -354,3 +444,5 @@ public class ChatActivity extends Activity implements Chatkeyboard.ChatKeyboardO
         }.start();
     }*/
 }
+
+

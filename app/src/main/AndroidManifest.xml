@@ -13,17 +13,18 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".activity.LoginActivity"
-            android:launchMode="singleTask">
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <activity android:name=".activity.ChatActivity"></activity>
-        <activity android:name=".activity.FriendListActivity"></activity>
-        <activity android:name=".activity.AddFriendActivity"></activity>
-        <activity android:name=".activity.RegisterActivity"></activity>
+        <activity android:name=".activity.ChatActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name=".activity.FriendListActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name=".activity.AddFriendActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name=".activity.RegisterActivity" android:screenOrientation="portrait"></activity>
 
 
 
